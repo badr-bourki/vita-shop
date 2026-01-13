@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Skeleton } from '@/components/ui/skeleton-loaders';
+import { sanitizeRedirectPath } from '@/lib/security';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -24,8 +24,10 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
   }
 
   if (!user) {
+    // Sanitize the current path before storing it for redirect
+    const safePath = sanitizeRedirectPath(location.pathname, '/');
     // Redirect to login, preserving the intended destination
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return <Navigate to="/auth/login" state={{ from: { pathname: safePath } }} replace />;
   }
 
   if (requireAdmin && !isAdmin) {

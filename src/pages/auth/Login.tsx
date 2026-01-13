@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeRedirectPath } from '@/lib/security';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,9 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as any)?.from?.pathname || '/';
+  // Sanitize redirect path to prevent open redirect vulnerabilities
+  const rawFrom = (location.state as any)?.from?.pathname;
+  const from = sanitizeRedirectPath(rawFrom, '/');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
