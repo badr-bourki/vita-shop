@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, User, Menu, X, Heart, ChevronDown } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, Heart, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
-const navigation = [
+const baseNavigation = [
   { name: 'Home', href: '/' },
   { name: 'Shop', href: '/shop' },
   { name: 'About', href: '/about' },
@@ -16,7 +17,13 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
+
+  // Add Admin link for admin users
+  const navigation = isAdmin 
+    ? [...baseNavigation, { name: 'Admin', href: '/admin' }]
+    : baseNavigation;
 
   const isActive = (href: string) => {
     if (href === '/') return location.pathname === '/';
@@ -98,7 +105,7 @@ export const Header = () => {
               className="text-muted-foreground hover:text-foreground"
               asChild
             >
-              <Link to="/auth/login">
+              <Link to={user ? "/account" : "/auth/login"}>
                 <User className="h-5 w-5" />
               </Link>
             </Button>
@@ -164,11 +171,11 @@ export const Header = () => {
               ))}
               <div className="pt-4 border-t border-border">
                 <Link
-                  to="/auth/login"
+                  to={user ? "/account" : "/auth/login"}
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-2 text-base font-medium text-muted-foreground"
                 >
-                  Sign In
+                  {user ? 'My Account' : 'Sign In'}
                 </Link>
               </div>
             </div>

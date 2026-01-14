@@ -54,9 +54,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const checkAdminStatus = async (userId: string) => {
-    // For now, check a simple condition - this will be replaced with proper roles table
-    // In production, use the user_roles table approach
-    setIsAdmin(false); // Default to false, will be updated when we add the roles system
+    try {
+      // Use the user_roles table to check admin status
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+        return;
+      }
+
+      setIsAdmin(!!data);
+    } catch (err) {
+      console.error('Error checking admin status:', err);
+      setIsAdmin(false);
+    }
   };
 
   const signIn = async (email: string, password: string) => {

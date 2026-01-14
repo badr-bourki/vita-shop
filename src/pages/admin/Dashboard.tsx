@@ -1,12 +1,28 @@
-import { Link } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, BarChart3 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Package, ShoppingCart, Mail, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+
+// Import admin sub-pages
+import Overview from './Overview';
+import Products from './Products';
+import ProductForm from './ProductForm';
+import Orders from './Orders';
+import Messages from './Messages';
+import AdminSettings from './Settings';
+
+const menuItems = [
+  { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
+  { icon: Package, label: 'Products', href: '/admin/products' },
+  { icon: ShoppingCart, label: 'Orders', href: '/admin/orders' },
+  { icon: MessageSquare, label: 'Messages', href: '/admin/messages' },
+  { icon: Settings, label: 'Settings', href: '/admin/settings' },
+];
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -16,20 +32,10 @@ const AdminDashboard = () => {
     });
   };
 
-  const stats = [
-    { label: 'Total Products', value: '12', change: '+2 this week', icon: Package },
-    { label: 'Total Orders', value: '0', change: 'No orders yet', icon: ShoppingCart },
-    { label: 'Total Customers', value: '1', change: 'You!', icon: Users },
-    { label: 'Revenue', value: '$0', change: 'Start selling', icon: BarChart3 },
-  ];
-
-  const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/admin', active: true },
-    { icon: Package, label: 'Products', href: '/admin/products' },
-    { icon: ShoppingCart, label: 'Orders', href: '/admin/orders' },
-    { icon: Users, label: 'Customers', href: '/admin/customers' },
-    { icon: Settings, label: 'Settings', href: '/admin/settings' },
-  ];
+  const isActive = (href: string) => {
+    if (href === '/admin') return location.pathname === '/admin';
+    return location.pathname.startsWith(href);
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -53,7 +59,7 @@ const AdminDashboard = () => {
               key={item.label}
               to={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active
+                isActive(item.href)
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
@@ -65,9 +71,13 @@ const AdminDashboard = () => {
         </nav>
 
         <div className="p-4 border-t border-border">
+          <div className="px-4 py-2 mb-2">
+            <p className="text-xs text-muted-foreground">Logged in as</p>
+            <p className="text-sm font-medium truncate">{user?.email}</p>
+          </div>
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-4 py-3 w-full text-muted-foreground hover:text-destructive transition-colors"
+            className="flex items-center gap-3 px-4 py-3 w-full text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted"
           >
             <LogOut className="h-5 w-5" />
             Sign Out
@@ -75,60 +85,51 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-serif text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back, {user?.email}
-          </p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, i) => (
-            <div
-              key={stat.label}
-              className="p-6 bg-card rounded-xl border border-border animate-slide-up"
-              style={{ animationDelay: `${i * 50}ms` }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <stat.icon className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <p className="font-serif text-3xl font-bold mb-1">{stat.value}</p>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <p className="text-xs text-primary mt-2">{stat.change}</p>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
+        <div className="flex items-center justify-between p-4">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <span className="text-primary-foreground font-serif font-bold">V</span>
             </div>
+            <span className="font-serif font-semibold">Admin</span>
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
+        </div>
+        <nav className="flex overflow-x-auto px-4 pb-2 gap-2">
+          {menuItems.map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                isActive(item.href)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Link>
           ))}
-        </div>
+        </nav>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="bg-card rounded-xl border border-border p-6">
-          <h2 className="font-semibold mb-4">Quick Actions</h2>
-          <div className="flex flex-wrap gap-4">
-            <Button asChild>
-              <Link to="/admin/products/new">Add New Product</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/orders">View Orders</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/">View Store</Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Info Notice */}
-        <div className="mt-8 p-6 bg-sage-light rounded-xl">
-          <h3 className="font-semibold mb-2">🚧 Admin Dashboard in Development</h3>
-          <p className="text-muted-foreground text-sm">
-            The full admin panel with product management, order processing, and analytics 
-            will be available once the database is set up. Currently showing demo data.
-          </p>
-        </div>
+      {/* Main Content */}
+      <main className="flex-1 p-4 lg:p-8 lg:pt-8 pt-32 overflow-auto">
+        <Routes>
+          <Route path="/" element={<Overview />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/new" element={<ProductForm />} />
+          <Route path="/products/:id/edit" element={<ProductForm />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/settings" element={<AdminSettings />} />
+        </Routes>
       </main>
     </div>
   );
