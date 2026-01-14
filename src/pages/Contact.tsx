@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
 import { z } from 'zod';
+import { submitContactMessage } from '@/lib/api';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -87,23 +88,37 @@ const Contact = () => {
       return;
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Save to database
+      await submitContactMessage({
+        name: result.data.name,
+        email: result.data.email,
+        subject: result.data.subject,
+        message: result.data.message,
+      });
 
-    toast({
-      title: 'Message Sent! ✉️',
-      description: 'Thank you for reaching out. We\'ll get back to you within 24 hours.',
-    });
+      toast({
+        title: 'Message Sent! ✉️',
+        description: 'Thank you for reaching out. We\'ll get back to you within 24 hours.',
+      });
 
-    // Clear form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    });
-
-    setIsSubmitting(false);
+      // Clear form
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
