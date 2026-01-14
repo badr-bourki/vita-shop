@@ -40,17 +40,17 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/auth/login" element={<Login />} />
               <Route path="/auth/register" element={<Register />} />
-              
+
               {/* Protected Routes */}
               <Route
-                path="/account"
+                path="/account/*"
                 element={
                   <ProtectedRoute>
                     <Account />
                   </ProtectedRoute>
                 }
               />
-              
+
               {/* Admin Routes */}
               <Route
                 path="/admin/*"
@@ -60,7 +60,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              
+
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
