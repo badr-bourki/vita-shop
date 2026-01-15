@@ -1,28 +1,31 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, User, Menu, X, Heart, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Search, ShoppingBag, User, Menu, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
-const baseNavigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Shop', href: '/shop' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' },
-];
-
 export const Header = () => {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
   const { user, isAdmin } = useAuth();
   const location = useLocation();
 
+  const baseNavigation = [
+    { name: t('common.home'), href: '/' },
+    { name: t('common.shop'), href: '/shop' },
+    { name: t('common.about'), href: '/about' },
+    { name: t('common.contact'), href: '/contact' },
+  ];
+
   // Add Admin link for admin users
   const navigation = isAdmin 
-    ? [...baseNavigation, { name: 'Admin', href: '/admin' }]
+    ? [...baseNavigation, { name: t('common.admin'), href: '/admin' }]
     : baseNavigation;
 
   const isActive = (href: string) => {
@@ -57,7 +60,7 @@ export const Header = () => {
           <div className="hidden lg:flex lg:items-center lg:gap-8">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 to={item.href}
                 className={cn(
                   'text-sm font-medium transition-colors relative py-2',
@@ -76,6 +79,9 @@ export const Header = () => {
 
           {/* Right side actions */}
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Search button */}
             <Button
               variant="ghost"
@@ -93,7 +99,7 @@ export const Header = () => {
               className="text-muted-foreground hover:text-foreground hidden sm:flex"
               asChild
             >
-              <Link to="/wishlist">
+              <Link to={user ? "/account/wishlist" : "/auth/login"}>
                 <Heart className="h-5 w-5" />
               </Link>
             </Button>
@@ -135,7 +141,7 @@ export const Header = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder={`${t('common.search')}...`}
                   className="w-full h-12 pl-12 pr-4 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   autoFocus
                 />
@@ -156,7 +162,7 @@ export const Header = () => {
             <div className="px-4 py-6 space-y-4">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
@@ -175,7 +181,7 @@ export const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-2 text-base font-medium text-muted-foreground"
                 >
-                  {user ? 'My Account' : 'Sign In'}
+                  {user ? t('nav.myAccount') : t('common.login')}
                 </Link>
               </div>
             </div>
