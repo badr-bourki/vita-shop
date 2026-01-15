@@ -1,17 +1,19 @@
 import { Link, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { User, Package, Heart, LogOut, Settings } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
-// ✅ Sub pages (must have export default)
+// Sub pages
 import Profile from "./account/Profile";
 import Orders from "./account/Orders";
 import Wishlist from "./account/Wishlist";
 import AccountSettings from "./account/Settings";
 
 const Account = () => {
+  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
@@ -19,39 +21,38 @@ const Account = () => {
   const handleSignOut = async () => {
     await signOut();
     toast({
-      title: "Signed out",
-      description: "You have been signed out successfully.",
+      title: t('account.signedOut'),
+      description: t('account.signedOutDesc'),
     });
   };
 
   const menuItems = [
     {
       icon: User,
-      label: "Profile",
+      label: t('account.profile'),
       href: "/account/profile",
-      description: "Manage your personal information",
+      description: t('account.profileDesc'),
     },
     {
       icon: Package,
-      label: "Orders",
+      label: t('account.orders'),
       href: "/account/orders",
-      description: "View your order history and status",
+      description: t('account.ordersDesc'),
     },
     {
       icon: Heart,
-      label: "Wishlist",
+      label: t('account.wishlist'),
       href: "/account/wishlist",
-      description: "Products you've saved for later",
+      description: t('account.wishlistDesc'),
     },
     {
       icon: Settings,
-      label: "Settings",
+      label: t('account.settings'),
       href: "/account/settings",
-      description: "Account preferences and security",
+      description: t('account.settingsDesc'),
     },
   ];
 
-  // ✅ show menu only on /account root
   const isRoot = location.pathname === "/account" || location.pathname === "/account/";
 
   return (
@@ -63,11 +64,11 @@ const Account = () => {
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <User className="h-10 w-10 text-primary" />
             </div>
-            <h1 className="font-serif text-3xl font-bold mb-2">My Account</h1>
+            <h1 className="font-serif text-3xl font-bold mb-2">{t('account.title')}</h1>
             <p className="text-muted-foreground">{user?.email}</p>
           </div>
 
-          {/* ✅ If user is on /account show menu cards */}
+          {/* Menu cards on /account root */}
           {isRoot && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {menuItems.map((item, i) => (
@@ -89,21 +90,27 @@ const Account = () => {
             </div>
           )}
 
-          {/* ✅ Nested routes for /account/* */}
-          <div className={!isRoot ? "bg-card border border-border rounded-xl p-4" : ""}>
-            <Routes>
-              {/* When visiting /account -> show the menu (handled above) */}
-              <Route path="/" element={<div />} />
+          {/* Back button for sub-pages */}
+          {!isRoot && (
+            <div className="mb-6">
+              <Link
+                to="/account"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                ← {t('common.back')}
+              </Link>
+            </div>
+          )}
 
-              <Route path="profile" element={<Profile />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="wishlist" element={<Wishlist />} />
-              <Route path="settings" element={<AccountSettings />} />
-
-              {/* Any unknown sub path -> redirect to /account */}
-              <Route path="*" element={<Navigate to="/account" replace />} />
-            </Routes>
-          </div>
+          {/* Nested routes */}
+          <Routes>
+            <Route path="/" element={<div />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="wishlist" element={<Wishlist />} />
+            <Route path="settings" element={<AccountSettings />} />
+            <Route path="*" element={<Navigate to="/account" replace />} />
+          </Routes>
 
           {/* Sign Out */}
           <div className="text-center mt-8">
@@ -113,7 +120,7 @@ const Account = () => {
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              {t('common.logout')}
             </Button>
           </div>
         </div>
